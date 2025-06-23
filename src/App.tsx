@@ -6,14 +6,14 @@ import { LS, LSKeys } from "./ls";
 import { appSt } from "./style.css";
 import { ThxLayout } from "./thx/ThxLayout";
 import { Gap } from "@alfalab/core-components/gap";
-import { ChangeEvent, useEffect, useState } from "react";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { AmountInput } from "@alfalab/core-components/amount-input";
 import { SliderInput } from "@alfalab/core-components/slider-input";
 import { Divider } from "@alfalab/core-components/divider";
 import { Switch } from "@alfalab/core-components/switch";
 import { InformationCircleLineSIcon } from "@alfalab/icons-glyph/InformationCircleLineSIcon";
 import { CheckmarkCircleSIcon } from "@alfalab/icons-glyph/CheckmarkCircleSIcon";
-import { Swiper, SwiperSlide } from "swiper/react";
+import { Swiper, SwiperSlide, SwiperRef } from "swiper/react";
 
 function calculateMonthlyPayment(
   annualRate: number,
@@ -34,10 +34,11 @@ export const App = () => {
   const [amount, setAmount] = useState(1_900_000);
   const [years, setYears] = useState(1);
   const [stringYears, setStringYears] = useState("до 1 года");
-  const [isAutoChecked, setIsAutoChecked] = useState(true);
-  const [swiperPayment, setSwiperPayment] = useState("Недвижимость");
-  const [isRealEstate, setIsRealEstate] = useState(true);
+  const [isAutoChecked, setIsAutoChecked] = useState(false);
+  const [swiperPayment, setSwiperPayment] = useState("Без залога");
+  const [isRealEstate, setIsRealEstate] = useState(false);
   const [step, setStep] = useState(0);
+  const swiperRef = useRef<SwiperRef | null>(null);
 
   const handleSumSliderChange = ({ value }: { value: number }) => {
     setAmount(value);
@@ -93,6 +94,12 @@ export const App = () => {
       document.body.style.backgroundColor = "#F3F4F5";
     }
   }, [step]);
+
+  useEffect(() => {
+    if (swiperRef.current) {
+      swiperRef.current.swiper.update();
+    }
+  }, [isAutoChecked, isRealEstate]);
 
   if (thx) {
     return <ThxLayout />;
@@ -246,193 +253,11 @@ export const App = () => {
             slidesPerView="auto"
           >
             <SwiperSlide
-              onClick={() => setSwiperPayment("Недвижимость")}
-              style={{
-                width: "170px",
-                marginLeft: "16px",
-              }}
-            >
-              <Gap size={4} />
-              <div
-                className={appSt.sliderCard({
-                  selected: swiperPayment === "Недвижимость",
-                })}
-              >
-                {swiperPayment === "Недвижимость" && (
-                  <div className={appSt.sliderCardIcon}>
-                    <CheckmarkCircleSIcon />
-                  </div>
-                )}
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Недвижимость"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  Платеж в месяц
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-large"
-                  defaultMargins={false}
-                  style={{
-                    color: swiperPayment === "Недвижимость" ? "white" : "black",
-                  }}
-                >
-                  {calculateMonthlyPayment(
-                    0.2807,
-                    12,
-                    years * 12,
-                    amount,
-                  ).toLocaleString("ru-RU", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  ₽
-                </Typography.Text>
-                <Gap size={12} />
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Недвижимость"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  {amount.toLocaleString("ru-RU", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  ₽
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Недвижимость"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  На {years} {years <= 1 ? "год" : "лет"}
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Недвижимость"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  Под залог недвижимости
-                </Typography.Text>
-              </div>
-            </SwiperSlide>
-            <SwiperSlide
-              onClick={() => setSwiperPayment("Авто")}
+              onClick={() => setSwiperPayment("Без залога")}
               style={{ width: "170px" }}
             >
               <Gap size={4} />
               <div
-                className={appSt.sliderCard({
-                  selected: swiperPayment === "Авто",
-                })}
-              >
-                {swiperPayment === "Авто" && (
-                  <div className={appSt.sliderCardIcon}>
-                    <CheckmarkCircleSIcon />
-                  </div>
-                )}
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Авто"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  Платеж в месяц
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-large"
-                  defaultMargins={false}
-                  style={{
-                    color: swiperPayment === "Авто" ? "white" : "black",
-                  }}
-                >
-                  {calculateMonthlyPayment(
-                    0.27,
-                    12,
-                    years * 12,
-                    amount,
-                  ).toLocaleString("ru-RU", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  ₽
-                </Typography.Text>
-                <Gap size={12} />
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  defaultMargins={false}
-                  color={
-                    swiperPayment === "Авто"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                >
-                  {amount.toLocaleString("ru-RU", {
-                    minimumFractionDigits: 0,
-                    maximumFractionDigits: 0,
-                  })}{" "}
-                  ₽
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Авто"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  На {years} {years <= 1 ? "год" : "лет"}
-                </Typography.Text>
-                <Typography.Text
-                  tag="p"
-                  view="primary-small"
-                  color={
-                    swiperPayment === "Авто"
-                      ? "secondary-inverted"
-                      : "secondary"
-                  }
-                  defaultMargins={false}
-                >
-                  Под залог <br /> авто
-                </Typography.Text>
-              </div>
-            </SwiperSlide>
-            <SwiperSlide
-              onClick={() => setSwiperPayment("Без залога")}
-              style={{ width: "186px" }}
-            >
-              <Gap size={4} />
-              <div
-                style={{ marginRight: "16px" }}
                 className={appSt.sliderCard({
                   selected: swiperPayment === "Без залога",
                 })}
@@ -462,7 +287,16 @@ export const App = () => {
                     color: swiperPayment === "Без залога" ? "white" : "black",
                   }}
                 >
-                  20 000 ₽
+                  {calculateMonthlyPayment(
+                    0.339,
+                    12,
+                    years * 12,
+                    amount,
+                  ).toLocaleString("ru-RU", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  ₽
                 </Typography.Text>
                 <Gap size={12} />
                 <Typography.Text
@@ -507,6 +341,203 @@ export const App = () => {
                 </Typography.Text>
               </div>
             </SwiperSlide>
+
+            {isRealEstate && (
+              <SwiperSlide
+                onClick={() => setSwiperPayment("Недвижимость")}
+                style={{
+                  width: "170px",
+                  ...(isAutoChecked && { marginRight: "16px" }),
+                }}
+              >
+                <Gap size={4} />
+                <div
+                  className={appSt.sliderCard({
+                    selected: swiperPayment === "Недвижимость",
+                  })}
+                >
+                  {swiperPayment === "Недвижимость" && (
+                    <div className={appSt.sliderCardIcon}>
+                      <CheckmarkCircleSIcon />
+                    </div>
+                  )}
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Недвижимость"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    Платеж в месяц
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-large"
+                    defaultMargins={false}
+                    style={{
+                      color:
+                        swiperPayment === "Недвижимость" ? "white" : "black",
+                    }}
+                  >
+                    {calculateMonthlyPayment(
+                      0.2807,
+                      12,
+                      years * 12,
+                      amount,
+                    ).toLocaleString("ru-RU", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    ₽
+                  </Typography.Text>
+                  <Gap size={12} />
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Недвижимость"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    {amount.toLocaleString("ru-RU", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    ₽
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Недвижимость"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    На {years} {years <= 1 ? "год" : "лет"}
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Недвижимость"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    Под залог недвижимости
+                  </Typography.Text>
+                </div>
+              </SwiperSlide>
+            )}
+
+            {isAutoChecked && (
+              <SwiperSlide
+                onClick={() => setSwiperPayment("Авто")}
+                style={{
+                  width: "170px",
+                  ...(isRealEstate && { marginRight: "16px" }),
+                }}
+              >
+                <Gap size={4} />
+                <div
+                  className={appSt.sliderCard({
+                    selected: swiperPayment === "Авто",
+                  })}
+                >
+                  {swiperPayment === "Авто" && (
+                    <div className={appSt.sliderCardIcon}>
+                      <CheckmarkCircleSIcon />
+                    </div>
+                  )}
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Авто"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    Платеж в месяц
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-large"
+                    defaultMargins={false}
+                    style={{
+                      color: swiperPayment === "Авто" ? "white" : "black",
+                    }}
+                  >
+                    {calculateMonthlyPayment(
+                      0.27,
+                      12,
+                      years * 12,
+                      amount,
+                    ).toLocaleString("ru-RU", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    ₽
+                  </Typography.Text>
+                  <Gap size={12} />
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    defaultMargins={false}
+                    color={
+                      swiperPayment === "Авто"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                  >
+                    {amount.toLocaleString("ru-RU", {
+                      minimumFractionDigits: 0,
+                      maximumFractionDigits: 0,
+                    })}{" "}
+                    ₽
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Авто"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    На {years} {years <= 1 ? "год" : "лет"}
+                  </Typography.Text>
+                  <Typography.Text
+                    tag="p"
+                    view="primary-small"
+                    color={
+                      swiperPayment === "Авто"
+                        ? "secondary-inverted"
+                        : "secondary"
+                    }
+                    defaultMargins={false}
+                  >
+                    Под залог <br /> авто
+                  </Typography.Text>
+                </div>
+              </SwiperSlide>
+            )}
+
+            {isAutoChecked && isRealEstate && (
+              <SwiperSlide
+                style={{ width: "1px", visibility: "hidden" }}
+              ></SwiperSlide>
+            )}
           </Swiper>
         </>
       )}
@@ -617,7 +648,16 @@ export const App = () => {
                   weight="bold"
                   defaultMargins={false}
                 >
-                  16 000 ₽
+                  {calculateMonthlyPayment(
+                    0.339,
+                    12,
+                    years * 12,
+                    amount,
+                  ).toLocaleString("ru-RU", {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}{" "}
+                  ₽
                 </Typography.Text>
               )}
 
@@ -729,7 +769,7 @@ export const App = () => {
             view="ghost"
             style={{ height: "56px" }}
           >
-            Внести изменения
+            Изменить условия
           </ButtonMobile>
         </div>
       )}
